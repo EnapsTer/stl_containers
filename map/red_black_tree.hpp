@@ -23,15 +23,15 @@ namespace ft
 		typedef typename allocator_type::pointer 	p_node;
 
 		p_node create_node(value src){
-			p_node new_node = _allocator.allocate(1);
-			_allocator.construct(new_node, src);
+			p_node new_node = allocator_.allocate(1);
+			allocator_.construct(new_node, src);
 			return new_node;
 		}
 
 		void delete_node(p_node node){
 			if (node){
-				_allocator.destroy(node);
-				_allocator.deallocate(node, 1);
+				allocator_.destroy(node);
+				allocator_.deallocate(node, 1);
 			}
 		}
 
@@ -97,9 +97,9 @@ namespace ft
 
 		p_node find_node(p_node node, value key) const{
 			if (node){
-				if (_compare(node->value, key))
+				if (compare_(node->value, key))
 					return find_node(node->right, key);
-				else if (_compare(key, node->value))
+				else if (compare_(key, node->value))
 					return find_node(node->left, key);
 			}
 			return node;
@@ -108,7 +108,7 @@ namespace ft
 		p_node lowest_elem(p_node lowest, value cur_val) const{
 			p_node node = 0;
             while (lowest){
-				if (_compare(lowest->value, cur_val))
+				if (compare_(lowest->value, cur_val))
 					lowest = lowest->right;
 				else{
 					if (lowest->left){
@@ -138,7 +138,7 @@ namespace ft
 		}
 
 		size_type max_size() const{
-            return _allocator.max_size();}
+            return allocator_.max_size();}
 
 		void balance(p_node *root, p_node node){
 			p_node parent;
@@ -196,10 +196,10 @@ namespace ft
 			else{
 				p_node tmp = *root;
 				while (tmp){
-					if (!_compare(tmp->value, new_node->value) && !_compare(new_node->value, tmp->value) && tmp != new_node){
+					if (!compare_(tmp->value, new_node->value) && !compare_(new_node->value, tmp->value) && tmp != new_node){
 							delete_node(new_node);
 						return false;}
-					else if (_compare(new_node->value, tmp->value)){
+					else if (compare_(new_node->value, tmp->value)){
 						if (tmp->left)
 							tmp = tmp->left;
 						else{
@@ -376,7 +376,7 @@ namespace ft
 			}
 		}
 	private:
-		allocator_type 		_allocator;
-		key_compare 		_compare;
+		allocator_type 		allocator_;
+		key_compare 		compare_;
 	};
 }

@@ -1,7 +1,6 @@
 #pragma once
 
-namespace ft{
-    /* -------------------------------- enable if ---------------------------------*/
+namespace ft {
     template<bool B, class T = void>
     struct enable_if {};
 

@@ -36,51 +36,51 @@ namespace ft{
         typedef typename ft::node<pair_type> 									*p_node;
 
         explicit map(const key_compare &comp = key_compare(), const allocator_type &allocator = allocator_type()){
-            _allocator = allocator;
-            node = rb_tree.create_node(pair_type());
-            _key_compare = comp;
+            allocator_ = allocator;
+            node_ = red_black_tree_.create_node(pair_type());
+            key_compare_ = comp;
         }
 
         template<class InputIterator>
         map(InputIterator first, InputIterator last, const key_compare &comp = key_compare(), const allocator_type &allocator = allocator_type()){
-            _allocator = allocator;
-            node = rb_tree.create_node(pair_type());
-            _key_compare = comp;
+            allocator_ = allocator;
+            node_ = red_black_tree_.create_node(pair_type());
+            key_compare_ = comp;
             insert(first, last);
         }
 
         ~map(){
-            rb_tree.clear(&node->parent);
-            rb_tree.clear(&node);
+            red_black_tree_.clear(&node_->parent);
+            red_black_tree_.clear(&node_);
         }
 
         map(const map &src){
-            _allocator = src._allocator;
-            node = rb_tree.create_node(pair_type());
-            _key_compare = src._key_compare;
+            allocator_ = src.allocator_;
+            node_ = red_black_tree_.create_node(pair_type());
+            key_compare_ = src.key_compare_;
             *this = src;
         }
 
         map &operator=(const map &src){
             clear();
-            _allocator = src._allocator;
-            _key_compare = src._key_compare;
-            _value_compare = src._value_compare;
+            allocator_ = src.allocator_;
+            key_compare_ = src.key_compare_;
+            value_compare_ = src.value_compare_;
             insert(src.begin(), src.end());
             return *this;
         }
 
         iterator begin(){
-            return iterator(node, rb_tree.min_node(node->parent));}
+            return iterator(node_, red_black_tree_.min_node(node_->parent));}
 
         const_iterator begin() const{
-            return const_iterator(node, rb_tree.min_node(node->parent));}
+            return const_iterator(node_, red_black_tree_.min_node(node_->parent));}
 
         iterator end(){
-            return iterator(node, 0);}
+            return iterator(node_, 0);}
 
         const_iterator end() const{
-            return const_iterator(node, 0);}
+            return const_iterator(node_, 0);}
 
         reverse_iterator rbegin(){
             return reverse_iterator(end());}
@@ -95,32 +95,32 @@ namespace ft{
             return const_reverse_iterator(begin());}
 
         bool empty() const{
-            return _size == 0;}
+            return size_ == 0;}
 
         size_type size() const{
-            return _size;}
+            return size_;}
 
         size_type max_size() const{
-            return rb_tree.max_size();}
+            return red_black_tree_.max_size();}
 
         mapped_type &operator[](const key_type &k){
-            bool res = rb_tree.insert(&node->parent,rb_tree.create_node(add_new_pair(k)));
-            _size += res;
-            p_node p = rb_tree.find_node(node->parent, add_new_pair(k));
+            bool res = red_black_tree_.insert(&node_->parent, red_black_tree_.create_node(add_new_pair(k)));
+            size_ += res;
+            p_node p = red_black_tree_.find_node(node_->parent, add_new_pair(k));
             return p->value.second;
         }
 
         ft::pair<iterator, bool> insert(const pair_type &val){
-            bool res = rb_tree.insert(&node->parent, rb_tree.create_node(val));
-            _size += res;
-            p_node ptr = rb_tree.find_node(node->parent, val);
-            return ft::pair<iterator, bool>(iterator(node, ptr), res);
+            bool res = red_black_tree_.insert(&node_->parent, red_black_tree_.create_node(val));
+            size_ += res;
+            p_node ptr = red_black_tree_.find_node(node_->parent, val);
+            return ft::pair<iterator, bool>(iterator(node_, ptr), res);
         }
 
         iterator insert(iterator, const pair_type &val){
-            _size += rb_tree.insert(&node->parent, rb_tree.create_node(val));
-            p_node p = rb_tree.find_node(node->parent, val);
-            return iterator(node, p);
+            size_ += red_black_tree_.insert(&node_->parent, red_black_tree_.create_node(val));
+            p_node p = red_black_tree_.find_node(node_->parent, val);
+            return iterator(node_, p);
         }
 
         template<class InputIterator>
@@ -130,15 +130,15 @@ namespace ft{
         }
 
         void erase(iterator position){
-            bool res = rb_tree.erase(&node->parent, *position);
+            bool res = red_black_tree_.erase(&node_->parent, *position);
             if (res)
-                --_size;
+                --size_;
         }
 
         size_type erase(const key_type &k){
-            bool res = (bool) rb_tree.erase(&node->parent, add_new_pair(k));
+            bool res = (bool) red_black_tree_.erase(&node_->parent, add_new_pair(k));
             if (res)
-                --_size;
+                --size_;
             return res;
         }
 
@@ -148,51 +148,51 @@ namespace ft{
         }
 
         void swap(map &x){
-            ft::swap(x.node, node);
-            ft::swap(x._key_compare, _key_compare);
-            ft::swap(x._value_compare, _value_compare);
-            ft::swap(x._size, _size);
+            ft::swap(x.node_, node_);
+            ft::swap(x.key_compare_, key_compare_);
+            ft::swap(x.value_compare_, value_compare_);
+            ft::swap(x.size_, size_);
         }
 
         void clear(){
-            rb_tree.clear(&node->parent);
-            node->parent = 0;
-            _size = 0;
+            red_black_tree_.clear(&node_->parent);
+            node_->parent = 0;
+            size_ = 0;
         }
 
         key_compare key_comp() const{
-            return _key_compare;}
+            return key_compare_;}
 
         value_compare value_comp() const{
-            return _value_compare;}
+            return value_compare_;}
 
         iterator find(const key_type &k){
-            p_node ptr = rb_tree.find_node(node->parent, add_new_pair(k));
-            return iterator(node, ptr);
+            p_node ptr = red_black_tree_.find_node(node_->parent, add_new_pair(k));
+            return iterator(node_, ptr);
         }
 
         const_iterator find(const key_type &k) const{
-            p_node ptr = rb_tree.find_node(node->parent, add_new_pair(k));
-            return const_iterator(node, ptr);
+            p_node ptr = red_black_tree_.find_node(node_->parent, add_new_pair(k));
+            return const_iterator(node_, ptr);
         }
 
         size_type count(const key_type &k) const{
-            if (rb_tree.find_node(node->parent, add_new_pair(k)))
+            if (red_black_tree_.find_node(node_->parent, add_new_pair(k)))
                 return 1;
             return 0;
         }
 
         iterator lower_bound(const key_type &k){
-            return (iterator(node, rb_tree.lowest_elem(node->parent, add_new_pair(k))));
+            return (iterator(node_, red_black_tree_.lowest_elem(node_->parent, add_new_pair(k))));
         }
 
         const_iterator lower_bound(const key_type &k) const{
-            return (const_iterator(node, rb_tree.lowest_elem(node->parent, add_new_pair(k))));
+            return (const_iterator(node_, red_black_tree_.lowest_elem(node_->parent, add_new_pair(k))));
         }
 
         iterator upper_bound(const key_type &k){
-            p_node temp = rb_tree.lowest_elem(node->parent, add_new_pair(k));
-            iterator res(node, temp);
+            p_node temp = red_black_tree_.lowest_elem(node_->parent, add_new_pair(k));
+            iterator res(node_, temp);
 
             if (temp && temp->value.first == k)
                 ++res;
@@ -200,8 +200,8 @@ namespace ft{
         }
 
         const_iterator upper_bound(const key_type &k) const{
-            p_node temp = rb_tree.lowest_elem(node->parent, add_new_pair(k));
-            iterator res(node, temp);
+            p_node temp = red_black_tree_.lowest_elem(node_->parent, add_new_pair(k));
+            iterator res(node_, temp);
 
             if (temp && temp->value.first == k)
                 ++res;
@@ -216,31 +216,31 @@ namespace ft{
             return ft::make_pair(lower_bound(k), upper_bound(k));}
 
         T& at(const Key &key){
-            p_node temp  = rb_tree.lowest_elem(node->parent, add_new_pair(key));
-            iterator res(node, temp);
+            p_node temp  = red_black_tree_.lowest_elem(node_->parent, add_new_pair(key));
+            iterator res(node_, temp);
             if (res == this->end())
-                throw std::out_of_range("map::at: key not found");
+                throw std::out_of_range("Key 'map::at' not found.");
             return (res->second);
         }
 
         const T& at(const Key &key) const{
-            p_node temp  = rb_tree.lowest_elem(node->parent, add_new_pair(key));
-            iterator res(node, temp);
+            p_node temp  = red_black_tree_.lowest_elem(node_->parent, add_new_pair(key));
+            iterator res(node_, temp);
             if (res == this->end())
-                throw std::out_of_range("map::at: key not found");
+                throw std::out_of_range("Key 'map::at' not found.");
             return (res->second);
         }
 
         allocator_type get_allocator() const{
-            return _allocator;}
+            return allocator_;}
 
     private:
-        tree_type 			rb_tree;
-        allocator_type 		_allocator;
-        p_node 				node;
-        key_compare 		_key_compare;
-        value_compare 		_value_compare;
-        size_type 			_size;
+        tree_type 			red_black_tree_;
+        allocator_type 		allocator_;
+        p_node 				node_;
+        key_compare 		key_compare_;
+        value_compare 		value_compare_;
+        size_type 			size_;
 
         pair_type add_new_pair(const Key &key) const{
             return ft::make_pair(key, mapped_type());}
